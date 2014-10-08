@@ -183,7 +183,7 @@ sub message {
     } elsif($mongo_method eq 'remove') {
         $coll->remove($mongo_search);
     } elsif($mongo_method eq 'update') {
-        $coll->update($mongo_search, $mongo_write, {upsert => 1, multiple => 1});
+        $coll->update($mongo_search, { '$set' => $mongo_write }, {upsert => 1, multiple => 1});
     } elsif($mongo_method eq 'find') {
         my $cursor = $coll->find($mongo_search);
         my $ret;
