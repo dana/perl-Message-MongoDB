@@ -10,4 +10,5 @@ BEGIN {
     use_ok( 'Message::MongoDB' ) || print "Bail out!\n";
 }
 
-diag( "Testing Message::MongoDB $Message::MongoDB::VERSION, Perl $], $^X" );
+my $version = $Message::MongoDB::VERSION || 'pre-build';
+diag( "Testing Message::MongoDB $version, Perl $], $^X" );
