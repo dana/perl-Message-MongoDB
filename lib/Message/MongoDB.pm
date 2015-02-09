@@ -8,15 +8,6 @@ use MongoDB;
 
 Message::MongoDB - Message-oriented interface to MongoDB
 
-=head1 VERSION
-
-Version 0.1
-
-=cut
-
-our $VERSION = '0.1';
-
-
 =head1 SYNOPSIS
 
     use Message::MongoDB;
