@@ -1,7 +1,7 @@
 #!perl
 use 5.006;
 use strict; use warnings FATAL => 'all';
-use Test::More;
+use Test::Most;
 use Data::Dumper;
 
 BEGIN {
@@ -30,106 +30,86 @@ if($@) {
 }
 
 #insert
-eval {
+lives_ok {
     ok $mongo->message({
         mongo_db => $test_db_name,
         mongo_collection => $test_collection_name,
         mongo_method => 'insert',
         mongo_write => { a => 'b' }
-    });
-};
-print STDERR "Error: $@\n" if $@;
-ok not $@;
+    }),"Method 'insert' inserted object into collection";
+} "...without error";
 
-eval {
-    ok my $ret = $mongo->_get_documents($test_db_name,$test_collection_name);
-    ok $ret->[0]->{a} eq 'b';
-};
-print STDERR "Error: $@\n" if $@;
-ok not $@;
+lives_ok {
+    my $ret = $mongo->_get_documents($test_db_name,$test_collection_name);
+    is $ret->[0]->{a}, 'b', "Verified object in collection";
+} "...without error";
 
 #remove the previous insert
-eval {
+lives_ok {
     ok $mongo->message({
         mongo_db => $test_db_name,
         mongo_collection => $test_collection_name,
         mongo_method => 'remove',
         mongo_search => { a => 'b' }
-    });
-};
-print STDERR "Error: $@\n" if $@;
-ok not $@;
+    }), "Method 'remove' removed object from collection";
+} "...without error";
 
-eval {
-    ok my $ret = $mongo->_get_documents($test_db_name,$test_collection_name);
-    ok scalar @$ret == 0;
-};
-print STDERR "Error: $@\n" if $@;
-ok not $@;
+lives_ok {
+    my $ret = $mongo->_get_documents($test_db_name,$test_collection_name);
+    is @$ret, 0, "Verified object not in collection";
+} "...without error";
 
 #update
 #first need to do an insert
-eval {
+lives_ok {
     ok $mongo->message({
         mongo_db => $test_db_name,
         mongo_collection => $test_collection_name,
         mongo_method => 'insert',
         mongo_write => { a => 'b' }
-    });
-};
-print STDERR "Error: $@\n" if $@;
-ok not $@;
+    }),"Method 'insert' inserted another object into collection";
+} "...without error";
 
-eval {
-    ok my $ret = $mongo->_get_documents($test_db_name,$test_collection_name);
-    ok $ret->[0]->{a} eq 'b';
-};
-print STDERR "Error: $@\n" if $@;
-ok not $@;
+lives_ok {
+    my $ret = $mongo->_get_documents($test_db_name,$test_collection_name);
+    is $ret->[0]->{a}, 'b', "Verified object in collection";
+} "...without error";
 
 #now the update
-eval {
+lives_ok {
     ok $mongo->message({
         mongo_db => $test_db_name,
         mongo_collection => $test_collection_name,
         mongo_method => 'update',
         mongo_search => { a => 'b' },
         mongo_write => { a => 'c' },
-    });
-};
-print STDERR "Error: $@\n" if $@;
-ok not $@;
+    }), "Method 'update' updated object in collection";
+} "...without error";
 
-eval {
-    ok my $ret = $mongo->_get_documents($test_db_name,$test_collection_name);
-    ok $ret->[0]->{a} eq 'c';
-};
-print STDERR "Error: $@\n" if $@;
-ok not $@;
+lives_ok {
+    my $ret = $mongo->_get_documents($test_db_name,$test_collection_name);
+    is $ret->[0]->{a}, 'c', "Verified updated object in collection";
+} "...without error";
 
 #find
 #make sure we don't have a stray emit
-ok not scalar @Message::MongoDB::return_messages;
+is @Message::MongoDB::return_messages, 0, "Starting with zero emit messages";
 
-eval {
+lives_ok {
     ok $mongo->message({
         mongo_db => $test_db_name,
         mongo_collection => $test_collection_name,
         mongo_method => 'find',
         mongo_search => { a => 'c' },
-    });
-};
-print STDERR "Error: $@\n" if $@;
-ok not $@;
+    }), "Method 'find' found object in collection";
+} "...without error";
 
-eval {
-    ok my $ret = $mongo->_get_documents($test_db_name,$test_collection_name);
-    ok $ret->[0]->{a} eq 'c';
-};
-print STDERR "Error: $@\n" if $@;
-ok not $@;
+lives_ok {
+    my $ret = $mongo->_get_documents($test_db_name,$test_collection_name);
+    is $ret->[0]->{a}, 'c', "Verified object still in collection";
+} "...without error";
 
-ok scalar @Message::MongoDB::return_messages == 1;
-ok $Message::MongoDB::return_messages[0][0]->{a} eq 'c';
+is @Message::MongoDB::return_messages, 1, "Method 'find' created 1 emit message";
+is $Message::MongoDB::return_messages[0][0]->{a}, 'c', "Emit message has object";
 
 done_testing();
